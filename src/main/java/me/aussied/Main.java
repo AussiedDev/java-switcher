@@ -1,75 +1,116 @@
 package me.aussied;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 
-/** Crappy java switcher
- * @author Aussied
+/** java switcher
+ * @author Aussied!
  */
 public class Main {
 
-    /** Main function to get the application running */
-    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
+    /** Main function to get the app running */
+    public static void main(String[] args) {
+        final boolean[] inSet = {false};
 
-        /** Sets window theme to current GTK theme */
-        UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+        /** Set look and feel to current GTK+ theme */
+        try {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        final File[] file = {new File("/usr/lib/jvm")};
 
-        /** New window */
-        JFrame frame = new JFrame("Java Switcher");
-
-        /** Set close action to exit application */
+        /** Window */
+        JFrame frame = new JFrame("Java Version Switcher");
+        frame.setTitle("Java Version Switcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        /** Set window size */
         frame.setSize(500, 400);
-
-        /** Make non resizable */
         frame.setResizable(false);
-
-        /** Move the window to the center (kinda) of the screen. */
         frame.setLocationRelativeTo(null);
-
-        /** Make window not hidden */
         frame.setVisible(true);
-
-        /** Remove layout */
         frame.setLayout(null);
 
-        /** New variable set to jvm directory */
-        File file = new File("/usr/lib/jvm");
+        /** Settings Panel */
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setBounds(6, 60, frame.getWidth() - 12, frame.getHeight() - 135);
+        settingsPanel.setLayout(new GridLayout(4, 3));
 
-        /** Create a new file array for the amount of files in jvm directory */
-        String[] files = file.list();
 
-        /** Add options to list */
-        JList list = new JList(files);
+        /** List of methods */
+        JList methodList = new JList(new String[] {"Arch", "Ubuntu"});
+        methodList.setSelectedIndex(1);
+        methodList.setVisible(false);
 
-        /** Sets JList one option only (to select) */
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JLabel methodLabel = new JLabel("Method");
+        methodLabel.setVisible(false);
 
-        /** Set action when an option gets selected */
-        list.addListSelectionListener(listSelectionEvent -> {
-            if(!listSelectionEvent.getValueIsAdjusting()) {
-                System.out.println(list.getSelectedValue());
-                try {
-                    Runtime.getRuntime().exec("archlinux-java set " + list.getSelectedValue());
-                } catch (IOException e) { e.printStackTrace(); }
+        /** List of available javas */
+        JList javaList = new JList(file[0].list());
+        javaList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        /** List of available javas but with scroll */
+        JScrollPane javaScrollPane = new JScrollPane(javaList);
+        javaScrollPane.setBounds(6, 60, frame.getWidth() - 12, frame.getHeight() - 135);
+        javaScrollPane.getVerticalScrollBar().setUnitIncrement(6);
+
+        /** Button on the bottom left */
+        JButton leftButton = new JButton("Settings");
+        leftButton.setBounds(6, frame.getHeight() - 70, 115, 34);
+        leftButton.setFocusable(false);
+        leftButton.setVisible(true);
+
+        /** Button on the bottom right */
+        JButton rightButton = new JButton("Quit");
+        rightButton.setBounds(frame.getWidth() - 121, frame.getHeight() - 70, 115, 34);
+        rightButton.setFocusable(false);
+        rightButton.setVisible(true);
+
+
+        /** When object from javaList clicked */
+        javaList.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount() == 2) {
+                    System.out.println(javaList.getSelectedValue());
+                    try {
+                        /** Setting java version for ArchLinux */
+                        if(methodList.getSelectedValue().equals("Arch")) {
+                            Runtime.getRuntime().exec("archlinux-java set " + javaList.getSelectedValue());
+                        } else {
+                            /** Setting java version for UbuntuLinux */
+
+                        }
+                    } catch (IOException ex) { ex.printStackTrace(); }
+                }
             }
         });
 
-        /** Create new scrollable list */
-        JScrollPane scrollPane = new JScrollPane(list);
+        /** When leftButton clicked */
+        leftButton.addActionListener(e -> {
+            inSet[0] = !inSet[0];
+            boolean inSet2 = inSet[0] ? false : true;
 
-        /** Set size */
-        scrollPane.setBounds(0, 0, frame.getWidth(), frame.getHeight());
+            javaScrollPane.setVisible(inSet2);
+            rightButton.setVisible(inSet2);
+            methodList.setVisible(!inSet2);
+            leftButton.setText(!inSet2 ? "Back" : "Settings");
+            settingsPanel.setVisible(!inSet2);
+            methodLabel.setVisible(!inSet2);
 
-        /** Increase scroll speed */
-        scrollPane.getVerticalScrollBar().setUnitIncrement(6);
+        });
+        /** When rightButton clicked */
+        rightButton.addActionListener(e -> System.exit(0));
 
-        /** Add list including options */
-        frame.add(scrollPane);
-
-        /** Repaint the window to fix random problems from happening */
+        /** Add components to frame */
+        settingsPanel.add(methodLabel);
+        settingsPanel.add(methodList);
+        frame.add(javaScrollPane);
+        frame.add(rightButton);
+        frame.add(leftButton);
+        frame.add(settingsPanel);
         frame.repaint();
     }
 
