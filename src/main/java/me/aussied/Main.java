@@ -20,7 +20,7 @@ public class Main {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        final File[] file = {new File("/usr/lib/jvm")};
+        final File file = new File("/usr/lib/jvm");
 
         /** Window */
         JFrame frame = new JFrame("Java Version Switcher");
@@ -47,7 +47,7 @@ public class Main {
         methodLabel.setVisible(false);
 
         /** List of available javas */
-        JList javaList = new JList(file[0].list());
+        JList javaList = new JList(file.list());
         javaList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         /** List of available javas but with scroll */
@@ -81,7 +81,9 @@ public class Main {
                             Runtime.getRuntime().exec("archlinux-java set " + javaList.getSelectedValue());
                         } else {
                             /** Setting java version for UbuntuLinux */
-
+                            Runtime.getRuntime().exec("sudo update-java-alternatives -s " + javaList.getSelectedValue());
+                            Runtime.getRuntime().exec("export JAVA_HOME=/usr/lib/jvm/ " + javaList.getSelectedValue());
+                            Runtime.getRuntime().exec("export PATH=$PATH:$JAVA_HOME");
                         }
                     } catch (IOException ex) { ex.printStackTrace(); }
                 }
